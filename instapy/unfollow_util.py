@@ -499,8 +499,10 @@ def follow_through_dialog(browser,
     dialog = browser.find_element_by_xpath(
       "//div[text()='Followers' or text()='Following']/following-sibling::div")
 
-    # scroll down the page
-    scroll_bottom(browser, dialog, allfollowing)
+    if amount > int(allfollowing*0.85):
+        amount = int(allfollowing*0.85)
+    try_again = 0 
+    sc_rolled = 0
 
     # get follow buttons. This approch will find the follow buttons and
     # ignore the Unfollow/Requested buttons.
@@ -514,14 +516,24 @@ def follow_through_dialog(browser,
     # scroll down if the generated list of user to follow is not enough to
     # follow amount set
     while (total_list < amount) and not abort:
-        amount_left = amount - total_list
         before_scroll = total_list
-        scroll_bottom(browser, dialog, amount_left)
-        sleep(1)
+        for i in range(3):
+            scroll_bottom(browser, dialog, 2)
+            sc_rolled += 1
+            sleep(random.randint(1, 2))
         follow_buttons = dialog.find_elements_by_xpath(
             "//div/div/span/button[text()='Follow']")
         total_list = len(follow_buttons)
         abort = (before_scroll == total_list)
+        if abort:
+            if total_list < real_amount:
+                logger.info("Failed to load desired amount of users.")
+        if sc_rolled > 85:   #you may want to use up to 100
+            if total_list < amount:
+                logger.info("Too many requests sent..  ~ sleeping a bit  |  attempt: {}  |  gathered links: {}".format(try_again+1, total_list))
+                sleep(random.randint(600, 655))
+                try_again += 1
+                sc_rolled = 0
 
     for person in follow_buttons:
 
