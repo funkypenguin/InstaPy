@@ -1,6 +1,7 @@
 FROM gliderlabs/alpine:latest
 
 RUN apk add --update \
+    busybox \
     python \
     python-dev \
     py-pip \
